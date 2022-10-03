@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+{% set navigation_bar = [
+('/install/pc-manual.html', 'pcman', 'PC manual install'),
+('/install/devmode.html', 'dev', 'Devmode (easier for quest)'),
+('/install/quest-android-sideload.html', 'qside', 'Quest Sideloading on Android'),
+('/install/quest-manual.html', 'qman', 'Quest manual install'),
+('/mod-layout.html', 'modlayout', 'Mod file layout'),
+] -%}
+
+{% set active = active|default('invalid') -%}
+
+<html class="h-100">
+
+    <head>
+        <title>bonelab mod.io repository</title>
+        <meta name="description" content="a repository of mod.io mods, to be used within bonelab">
+        <meta name="keywords" content="modding repository mod.io bonelab">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+            integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    </head>
+
+    <body class="d-flex flex-column h-100">
+        <header>
+            <nav class="navbar navbar-expand-md navbar-light fixed-top bg-white">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">Bonelab mod.io Repo</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        {% for href, id, caption in navigation_bar %}
+                        <li class="nav-item rounded-1 border border-secondary">
+                            {% if id==active %}
+                            <a class="nav-link active bg-light" href="{{ href|e }}">{{caption|e}}</a>
+                            {% else %}
+                            <a class="nav-link" href="{{ href|e }}">{{caption|e}}</a>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                        <md-span class="navbar-text" src="./lastupdate.md"></md-span>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <main class="flex-shrink-0">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-8">
+                        {% block body %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer class="footer mt-auto py-3 bg-light">
+            <div class="container">
+                <span class="text-muted">Author: laundmo#7544 - <a href="/credits.html">credits,
+                        help, and thanks</a>
+                </span>
+            </div>
+
+        </footer>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous">
+            </script>
+        {% block js %}
+        {% endblock %}
+    </body>
+
+</html>

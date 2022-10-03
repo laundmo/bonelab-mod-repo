@@ -1,0 +1,124 @@
+{% extends "_base.jinja2" %}
+
+{% block body %}
+<h1 class="mt-5 pt-3 display-4">Bonelab mod.io repository</h1>
+<figcaption class="blockquote-footer fs-4">
+    Download mods from ingame!
+</figcaption>
+<div class="row align-items-start">
+    <div class="col">
+        <h3>Last update</h3>
+        <kbd id="lastupdate"></kbd>
+    </div>
+    <div class="col">
+        <h3>Mods</h3>
+        <h1 class="display-6" id="modcount"></h1>
+    </div>
+    <div class="col">
+        <h3>NSFW Mods</h3>
+        <h1 class="display-6" id="nsfwmodcount"></h1>
+    </div>
+    <div class="col">
+        <h3><a href="/errors.html">Incompatible</a></h3>
+        <h1 class="display-6" id="broken"></h1>
+    </div>
+</div>
+<iframe width="100%" height="300px" src="https://www.youtube.com/embed/pSzvuxQ2Mz4" title="YouTube video player"
+    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen></iframe>
+<h3>Repositories:</h3>
+<div class="card">
+    <div class="card-body">
+        <code><a style="text-decoration: unset; color: unset;" href="https://blrepo.laund.moe/repository.json">https://blrepo.laund.moe/repository.json</a></br>
+        <a style="text-decoration: unset; color: unset;"  href="https://blrepo.laund.moe/nsfw_repository.json">https://blrepo.laund.moe/nsfw_repository.json</a>
+        </code>
+    </div>
+</div>
+<h4>Disclaimer: This site is not resposible for content from
+    <a class="btn btn-primary" href="https://mod.io/g/bonelab">mod.io</a>
+</h4>
+
+<section>
+    <h3 class="text-center mb-4 pb-2 text-primary fw-bold">FAQ</h3>
+    <p class="text-center mb-5">
+        Find the answers for the most frequently asked questions below
+    </p>
+
+    <div class="row">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <h6 class="mb-3 text-primary">Is this official?</h6>
+            <p>
+                No. This site is not run by Stress Level Zero. This way of getting mods to show up ingame is built into
+                the game for us to use though!
+            </p>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <h6 class="mb-3 text-primary">Will this mess with potential official mod repositories?</h6>
+            <p>
+                No! This should run just fine alongside future official mod repositories. The game is set up to handle
+                multiple mod repositories at the same time!
+            </p>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <h6 class="mb-3 text-primary">Is this safe?
+            </h6>
+            <p>
+                It only contains links to mod.io in a format the game can read. mod.io runs a virus check for every mod
+                - so it should be safe.
+            </p>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <h6 class="mb-3 text-primary">But how does it work?
+            </h6>
+            <p>
+                My code regularily scans through all mod.io mods and adds the links to them to the repository. The
+                repository is a big file which contains a list of all mods and their download locations.
+            </p>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <h6 class="mb-3 text-primary"> Why is a mod not showing up
+                ingame?
+            </h6>
+            <p>This could be for multiple reasons. First, see if its listed on the <a href="/errors.html">Errors</a>
+                page. This page lists mods which are uploaded in a format
+                incompatible with Bonelabs built in mod downloader. The other option is that it might not have been
+                scanned yet - look at the "Last update" time at the top to see when mod.io was last scanned.</p>
+        </div>
+
+        <div class="col-md-6 col-lg-4 mb-4">
+            <h6 class="mb-3 text-primary">I can't download a mod ingame.</h6>
+            <p>
+                This repo tries to scan for obvious issues in the mod format - but its not perfect. Sometims there might
+                be mods which are still in some way broken.
+            </p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block js %}
+<script>
+    async function load() {
+        await fetch("/site_meta.json")
+            .then((response) => {
+                return response.json(); // data into json
+            })
+            .then((data) => {
+                date = new Date(Date.parse(data["updated"] + "+00:00"));
+                const element = document.getElementById("lastupdate");
+                element.innerHTML = date.toISOString().replace("T", " ").replace(/\.\d\d\dZ/g, "");
+                document.getElementById("modcount").innerHTML = data["sfw_count"];
+                document.getElementById("nsfwmodcount").innerHTML = data["nsfw_count"];
+                document.getElementById("broken").innerHTML = data["faulty_count"];
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+    load();
+</script>
+{% endblock %}

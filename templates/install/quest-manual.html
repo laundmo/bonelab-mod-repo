@@ -1,0 +1,64 @@
+{% set active = "qman" %}
+{% extends "_base.jinja2" %}
+{% block body %}
+<h1 class="mt-5 pt-3 display-4">Manual Quest install</h1>
+<p>Requirements:</p>
+<ul>
+    <li>Facebook Account</li>
+    <li>Quest 2</li>
+    <li>Almost any Windows PC/Laptop device</li>
+</ul>
+<h3 id="device-setup">Device Setup</h3>
+<p>To install the custom repository for Bonelab on your Quest 2 headset we need to enable developer mode.
+    To do this, you have to be a registered &quot;developer&quot; on the Meta website, it&#39;s free, quick and easy.
+    Open
+    <a href="https://developer.oculus.com/sign-up/">https://developer.oculus.com/sign-up/</a> and create an
+    &#39;organization&#39;. You&#39;ll need to accept the developer
+    agreement. Most accounts will already be verified. Next you&#39;ll need to create an organisation like
+    above.
+</p>
+<h4 id="joining-or-creating-an-organization">Joining or Creating an Organization</h4>
+<p>To create a new organization, follow these steps:</p>
+<ol>
+    <li>Go to <a
+            href="https://developer.oculus.com/manage/organizations/create/">https://developer.oculus.com/manage/organizations/create/</a>.
+    </li>
+    <li>Fill in the appropriate information.</li>
+</ol>
+<h4 id="verify-your-account">Verify Your Account</h4>
+<ol>
+    <li>Go to <a href="https://developer.oculus.com/manage/verify/">https://developer.oculus.com/manage/verify/</a>.
+    </li>
+    <li>If prompted, login with your Meta Developer account.</li>
+    <li>Verify your account with the options presented.</li>
+</ol>
+<h4 id="enable-developer-mode">Enable Developer Mode</h4>
+<p>Once you belong to a developer organization, follow these steps to put your device in developer mode:</p>
+<ol>
+    <li>Put on the Meta headset and sign into the developer account you signed up with.</li>
+    <li>On the headset, go to Settings &gt; System &gt; Developer, and then turn on the USB Connection Dialog
+        option.</li>
+    <li>Connect the headset to the computer using a USB-C cable and put on the headset again.</li>
+    <li>Click Allow when prompted to allow access to data.</li>
+    <li>Accept Allow USB Debugging and Always allow from this computer when prompted on the headset.</li>
+</ol>
+<p><img src="https://blrepo.laund.moe/image1.png" alt=""></p>
+<h3 id="install-the-repository">Install the repository</h3>
+<ol>
+    <li>Plug your headset directly into your computer if not already and accept any options for connection
+        within your headset. Once you have done this, and your headset is powered on, with developer mode
+        enabled you will see your Quest 2 appear within “This PC” on windows.</li>
+    <li>Navigate into the Quest 2 folders by double clicking Quest 2 within “This PC” on windows.</li>
+    <li>Once you are in here, follow the following folder path:
+        Android &gt; data &gt; com.StressLevelZero.BONELAB &gt; files</li>
+    <li>You will see the file within here called “repositories.txt”. Right click, and copy this file.</li>
+    <li>Paste this file to your desktop, by right clicking again here and pasting.</li>
+    <li>Add the URLs from above to the end of file.</li>
+    <li>Once you have edited the text file, drag this into your Quest “files” folder below again:
+        Android &gt; data &gt; com.StressLevelZero.BONELAB &gt; files</li>
+    <li>It will ask to copy and replace. Select this option to overwrite the current file.</li>
+</ol>
+<p><a href="https://developer.oculus.com/documentation/native/android/mobile-device-setup/?locale=en_GB">docs partially
+        adapted
+        from</a></p>
+{% endblock %}

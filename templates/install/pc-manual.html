@@ -1,0 +1,27 @@
+{% set active = "pcman" %}
+{% extends "_base.jinja2" %}
+{% block body %}
+<h1 class="mt-5 pt-3 display-4">Manual PC install</h1>
+<ol>
+    <li>Using the file explorer, navigate to </br><code>C:\Users\USERNAMEHERE\AppData\LocalLow\Stress Level
+Zero\BONELAB\</code></br> and open the <code>repositories.txt</code> file.</li>
+    <li>Paste the URL in there.
+        <code>
+            </br>
+            https://blrepo.laund.moe/repository.json
+            
+        </code>
+        </br>
+        if you want NSFW mods too, just add the nsfw url in addition</br>
+        <code>
+
+            https://blrepo.laund.moe/nsfw_repository.json
+        </code>
+    </li>
+    <li>Save the file</li>
+    <li>Go to your mod station in Bonelab, open Settings and then Repos.</li>
+    <li>Make sure the mod.io repos show up.</li>
+</ol>
+<h3>Example <code>repositories.txt</code></h3>
+<p><img src="https://blrepo.laund.moe/bonelab-repo.png" alt=""></p>
+{% endblock %}

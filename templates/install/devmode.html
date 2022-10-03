@@ -1,0 +1,78 @@
+{% set active = "dev" %}
+{% extends "_base.jinja2" %}
+{% block body %}
+<h1 class="mt-5 pt-3 display-4">Using the Developer Mode to install</h1>
+
+<h2>Steps</h2>
+<ol>
+    <li>First, you need to enable Developer Mode in Bonelab
+        <ul>
+            <li>Go to Mods</li>
+            <li>Click on Settings</li>
+            <li>Click on "Disabled" button next to "Developer Mode"</li>
+            <li>Click on the new "Confirm" button which shows up.</li>
+            <li>Write down the <kbd>port</kbd> number which it shows.</li>
+        </ul>
+    </li>
+    <li>Besides the port, we also need to find the Quest's IP address.
+        <ul>
+            <li>Open your Settings</li>
+            <li>Click on Wi-Fi</li>
+            <li>Click on your connected Network</li>
+            <li>Scroll down and expand "Advanced Settings"</li>
+            <li>Scroll down to "Ip address" and write the address down somewhere.</li>
+        </ul>
+        Here is a <a href="https://www.youtube.com/shorts/gL1vgWubcJw">Youtube video</a> which shows how to do this.
+
+    </li>
+    <li>Continue with one of the following:</br>
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#Browser"
+            aria-expanded="false" aria-controls="Browser">
+            Using a Webbrowser Addon
+        </button>
+        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#Android"
+            aria-expanded="false" aria-controls="Android" disabled>
+            Android Phone (coming soon)
+        </button>
+    </li>
+    <div class="collapse" id="Browser">
+        <li>
+            Get the following "Simple
+            WebSocket Client" Extension: <a
+                href="https://chrome.google.com/webstore/detail/simple-websocket-client/pfdhoblngboilpfeibdedpjgfnlcodoo">Chrome/Edge/Brave/Vivaldi</a>
+            or <a href="https://addons.mozilla.org/en-US/firefox/addon/simple-websocket-client/">Firefox</a>
+        </li>
+        <li>
+            Open the extension by clicking on the icon.
+        </li>
+        <li>
+            You will need the <kbd>ip_address</kbd> and the <kbd>port</kbd> from the earlier steps.
+        </li>
+        <li>
+            In the URL field of the extension, enter: <code>ws://<kbd>ip_address</kbd>:<kbd>port</kbd>/console</code>
+        </li>
+        <li>
+            Press "Open" and wait for the Status to be "OPENED". If this doesn't work you might have the wrong IP.
+        </li>
+        <li>
+            <h5>Make sure the game is running, focused and that no menus are open on the quest!</h5>
+        </li>
+        <li>
+            In the "Request" field enter: <code>repo.add https://blrepo.laund.moe/repository.json</code> and press Send
+        </li>
+        <li>
+            If you want NSFW mods too, enter <code>repo.add https://blrepo.laund.moe/nsfw_repository.json</code> and
+            press
+            Send again.
+        </li>
+        <li>
+            You might have to restart the game before the repository shows up the first time.
+        </li>
+        <p><img src="/websocket_ext.png" alt=""></p>
+    </div>
+    <div class="collapse" id="Android">
+
+    </div>
+
+</ol>
+{% endblock %}
