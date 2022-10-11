@@ -40,6 +40,8 @@
 <h4>Disclaimer: This site is not resposible for mod content, it only links to <a
         href="https://mod.io/g/bonelab">mod.io</a></h4>
 
+
+
 <section>
     <h3 class="text-center mb-4 pb-2 text-primary fw-bold">FAQ</h3>
     <p class="text-center mb-5">
@@ -112,7 +114,10 @@
             .then((data) => {
                 date = new Date(Date.parse(data["updated"] + "+00:00"));
                 const element = document.getElementById("lastupdate");
-                element.innerHTML = date.toISOString().replace("T", " ").replace(/\.\d\d\dZ/g, "");
+                z = date.getTimezoneOffset() * 60 * 1000
+                tLocal = date - z
+                tLocal = new Date(tLocal)
+                element.innerHTML = tLocal.toISOString().slice(0, 19).replace('T', ' ');
                 document.getElementById("modcount").innerHTML = data["sfw_count"];
                 document.getElementById("nsfwmodcount").innerHTML = data["nsfw_count"];
                 document.getElementById("broken").innerHTML = data["faulty_count"];
