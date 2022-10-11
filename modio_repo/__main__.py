@@ -7,8 +7,9 @@ from tortoise import Tortoise, run_async
 
 from modio_repo.downloader import main as downloader_main
 from modio_repo.models import Mod, ModFileBase, PcPalletError, QuestPalletError
-from modio_repo.slz_json import RefList, SLZContainer, SLZObject, SLZType
+from modio_repo.slz_json import reset as reset_slzjson
 from modio_repo.slz_repositoryfile import RepositoryFile
+from modio_repo.utils import log
 
 
 async def check_duplicate_pallet_for(
@@ -45,26 +46,35 @@ async def run():
     await downloader_main()
 
     mods = await Mod.filter(malformed_pallet=False)
+
+    # TODO: handle deletion of mods
+    log("checking duplicate, malformed")
+    for mod in mods:
+        await mark_duplicate_pallets(mod)
+        await set_malformed(mod)
+
+    log("writing repo file")
+    mods = await Mod.filter(malformed_pallet=False)
     repofile = RepositoryFile(
         "./static/repository.json",
         "mod.io (unofficial)",
         "Unofficial repository of mod.io mods",
     )
+    nsfw = []
+    for mod in mods:
+        if mod.nsfw:
+            nsfw.append(mod)
+        else:
+            await repofile.add_mod(mod)
+    repofile.save()
+    reset_slzjson()
     nsfw_repofile = RepositoryFile(
         "./static/nsfw_repository.json",
         "mod.io nsfw (unofficial)",
         "Unofficial repository of NSFW mod.io mods",
     )
-    # TODO: handle deletion of mods
-    for mod in mods:
-        await mark_duplicate_pallets(mod)
-        await set_malformed(mod)
-        if mod.nsfw:
-            await nsfw_repofile.add_mod(mod)
-        else:
-            await repofile.add_mod(mod)
-
-    repofile.save()
+    for mod in nsfw:
+        await nsfw_repofile.add_mod(mod)
     nsfw_repofile.save()
 
 
@@ -89,4 +99,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import time
+
+    while True:
+        try:
+            main()
+            log("Done!")
+        except Exception as e:
+            log(e)
+        time.sleep(60 * 5)

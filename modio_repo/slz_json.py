@@ -25,6 +25,11 @@ dump = partial(json.dump, cls=SLZJSONEncoder)
 refable_types: dict[str, Type[Refable]] = {}
 
 
+def reset():
+    for typ in refable_types.values():
+        typ.elements = {}
+
+
 def object_hook(o: Any):
     # set refs where possible
     for key in o.keys():
