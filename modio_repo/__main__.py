@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections import Counter
+from datetime import datetime
 from typing import Type
 
 from tortoise import Tortoise, run_async
@@ -52,31 +54,39 @@ async def run():
     for mod in mods:
         await mark_duplicate_pallets(mod)
         await set_malformed(mod)
+    
+    log("writing repo file")
 
     reset_slzjson()
-    log("writing repo file")
-    mods = await Mod.filter(malformed_pallet=False)
     repofile = RepositoryFile(
         "./static/repository.json",
         "mod.io (unofficial)",
         "Unofficial repository of mod.io mods",
     )
-    nsfw = []
-    for mod in mods:
-        if mod.nsfw:
-            nsfw.append(mod)
-        else:
-            await repofile.add_mod(mod)
+    sfw_mods = await Mod.filter(malformed_pallet=False, nsfw=False)
+    for mod in sfw_mods:
+        await repofile.add_mod(mod)
     repofile.save()
+
     reset_slzjson()
     nsfw_repofile = RepositoryFile(
         "./static/nsfw_repository.json",
         "mod.io nsfw (unofficial)",
         "Unofficial repository of NSFW mod.io mods",
     )
-    for mod in nsfw:
+    nsfw_mods = await Mod.filter(malformed_pallet=False, nsfw=True)
+    for mod in nsfw_mods:
         await nsfw_repofile.add_mod(mod)
     nsfw_repofile.save()
+
+    faulty_mods = await Mod.filter(malformed_pallet=True).count()
+    with open("./static/site_meta.json", "w+") as f:
+        json.dump({
+            "updated": datetime.utcnow().isoformat(),
+            "nsfw_count": len(nsfw_mods),
+            "sfw_count": len(sfw_mods),
+            "faulty_count": faulty_mods
+        }, f)
 
 
 async def set_malformed(mod):
