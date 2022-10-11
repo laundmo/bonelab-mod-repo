@@ -12,12 +12,16 @@ requests-cache = "^0.9.6"
 exceptiongroup = "^1.0.0-rc.9"
 "mod.io" = { git = "https://github.com/laundmo/mod.io.git", branch = "master" }
 staticjinja = "^4.1.3"
+tortoise-orm = "^0.19.2"
+aiofiles = "^22.1.0"
 
 [tool.poetry.dev-dependencies]
+Flask = "^2.2.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
+slzjson = "modio_repo.slz_json:test"
 start = 'modio_repo.__main__:main'
