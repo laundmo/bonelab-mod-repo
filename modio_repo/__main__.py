@@ -53,6 +53,7 @@ async def run():
         await mark_duplicate_pallets(mod)
         await set_malformed(mod)
 
+    reset_slzjson()
     log("writing repo file")
     mods = await Mod.filter(malformed_pallet=False)
     repofile = RepositoryFile(
