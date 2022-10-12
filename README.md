@@ -15,6 +15,8 @@ To run, you need to copy `.env-example`, rename it to `.env` and add your mod.io
 - serve the content locally for testing: `poetry run python -m http.server -d ./static`
 - continously generate the static content from the templates:  `poetry run staticjinja watch --outpath=./static`
 
+for development i recommend passing `onepage=True` to `    await downloader_main()` in `__main__.py`- this will limit the amount of mods fetched from mod.io to a single page (100 mods).
+
 ## working principle
 
 The importer python code writes mods from mod.io to a sqlite3 db at `./db.sqlite3`
