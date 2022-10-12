@@ -7,7 +7,9 @@ The source code which powers https://blrepo.laund.moe
 
 ## Running this
 
-This proejct uses `poetry` to run, get it here: https://python-poetry.org/
+This project uses `poetry` to run, get it here: https://python-poetry.org/
+
+To run, you need to copy `.env-example`, rename it to `.env` and add your mod.io oauth2 credentials: https://docs.mod.io/#authentication
 
 - importer/json generator code: `poetry run start`.
 - serve the content locally for testing: `poetry run python -m http.server -d ./static`
