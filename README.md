@@ -26,3 +26,7 @@ It then runs error checks on the database, and finally generates the repository 
 ## todo
 
 Todos are tracked through [issues](https://github.com/laundmo/bonelab-mod-repo/issues)
+
+## contributing
+
+Before starting to work on code, please comment on the respective issue or open a new one to let others know that its being worked on. You don't have to wait for a response - it's just for others to see which issues are taken.
