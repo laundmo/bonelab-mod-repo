@@ -1,6 +1,6 @@
 static/
 __pycache__
-.vscode
+.vscode/tasks.json
 .env
 cache/
 db.*
