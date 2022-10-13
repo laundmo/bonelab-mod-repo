@@ -49,8 +49,6 @@ class PalletHandler(Generic[T]):
         pallet_list = await self.get_from_zip(file_obj)
 
         for zf_path, fs_path , mod_platform in pallet_list:
-            if mod_platform != web_platform:
-                raise PalletLoadError("Possible Platform mismatch", -999)
             
             data = self.get_pallet_content(fs_path)
 
@@ -63,6 +61,8 @@ class PalletHandler(Generic[T]):
                 fs_path=str(fs_path),
                 file=self.file,
             )
+            if mod_platform != web_platform:
+                raise PalletLoadError("Multiple Platforms or Platform Mismatch", self.modio_file_id)
             await db_pallet.save()
 
     def get_pallet_class(self):
