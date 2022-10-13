@@ -119,7 +119,7 @@ class PalletHandler(Generic[T]):
                 data = json.load(f)
             except UnicodeDecodeError:
                 print(file.resolve())
-                raise
+                raise PalletLoadError("Pallet is not UTF-8", self.modio_file_id)
             return self._read_pallet_content(data)
 
     def _read_pallet_content(self, data: dict[Any, Any]):
