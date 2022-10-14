@@ -108,7 +108,7 @@ class PalletHandler(Generic[T]):
                     )
                     async with aiofiles.open(fs_path, "wb+") as f:
                         await f.write(zf.read(pfile))
-                        platform = await self._get_platform(file_like)
+                        platform = await self._get_platform(zf)
                         found_pallets.append((path_in_zf, fs_path, platform))
             if len(found_pallets) < 0:
                 raise PalletLoadError(
@@ -122,11 +122,7 @@ class PalletHandler(Generic[T]):
                 self.modio_file_id,
             ) from e
 
-    async def _get_platform(self, file_like) -> ModPlatform:
-        try:
-            zf = ZipFile(file_like)
-        except BadZipfile as e:
-            raise PalletLoadError(str(e), self.modio_file_id)
+    async def _get_platform(self, zf) -> ModPlatform:
         try:
             file_list = zf.infolist()
             for pfile in file_list:
