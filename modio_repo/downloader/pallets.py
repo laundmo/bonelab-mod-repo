@@ -2,30 +2,24 @@ from __future__ import annotations
 
 import asyncio
 import json
-from enum import Enum
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Generic, List, Tuple, Type, TypeVar
+from typing import Any, List, Tuple, Type
+from venv import create
 from zipfile import BadZipfile, ZipFile
 
 import aiofiles
 import aiohttp
-from modio_repo.models import Mod, PcModFile, PcPallet, QuestModFile, QuestPallet
+from prisma.models import File, Mod, Pallet
+
 from modio_repo.utils import PalletLoadError, log
 
-T = TypeVar("T", QuestModFile, PcModFile)
 
-
-class ModPlatform(Enum):
-    PCVR = 0
-    QUEST = 1
-
-
-class PalletHandler(Generic[T]):
+class PalletHandler:
     PATH = Path("./static/pallets/")
     PATH.mkdir(exist_ok=True, parents=True)
 
-    def __init__(self, mod: Mod, file: T, session: aiohttp.ClientSession):
+    def __init__(self, mod: Mod, file: File, session: aiohttp.ClientSession):
         self.file = file
         self.modio_file_id = file.id
         self.mod = mod
@@ -36,12 +30,11 @@ class PalletHandler(Generic[T]):
         return self.PATH / f"{self.modio_file_id}.json"
 
     async def run(self):
-        db_pallet = await self.file.pallet.all().first()
+        db_pallet = await Pallet.prisma().find_first(where={"file_id": self.file.id})
 
         if db_pallet is not None:
             return db_pallet
 
-        pallet_type, web_platform = self.get_pallet_class()
         try:
             file_obj = await self.download()
         except asyncio.exceptions.TimeoutError:
@@ -51,28 +44,22 @@ class PalletHandler(Generic[T]):
         for zf_path, fs_path, mod_platform in pallet_list:
             data = self.get_pallet_content(fs_path)
 
-            db_pallet = pallet_type(
-                barcode=data["barcode"],
-                author=data["author"],
-                version=data["version"],
-                sdkVersion=data["sdkVersion"],
-                zip_path=str(zf_path),
-                fs_path=str(fs_path),
-                file=self.file,
-            )
             if mod_platform != web_platform:
                 raise PalletLoadError(
                     "Multiple Platforms or Platform Mismatch", self.modio_file_id
                 )
-            await db_pallet.save()
 
-    def get_pallet_class(self) -> Tuple[Type[QuestPallet | PcPallet], ModPlatform]:
-        if isinstance(self.file, QuestModFile):
-            return QuestPallet, ModPlatform.QUEST
-        elif isinstance(self.file, PcModFile):
-            return PcPallet, ModPlatform.PCVR
-        else:
-            raise NotImplementedError("Unknown File ORM Model passed!")
+            await Pallet.prisma().create(
+                data={
+                    "barcode": data["barcode"],
+                    "author": data["author"],
+                    "version": data["version"],
+                    "sdkVersion": data["sdkVersion"],
+                    "zip_path": str(zf_path),
+                    "fs_path": str(fs_path),
+                    "file": {"connect": {"id": self.file.id}},
+                }
+            )
 
     async def download(self):
         async with self.session.get(
@@ -91,7 +78,7 @@ class PalletHandler(Generic[T]):
 
             return memoryfile
 
-    async def get_from_zip(self, file_like) -> List[Tuple[Path, Path, ModPlatform]]:
+    async def get_from_zip(self, file_like) -> List[Tuple[Path, Path, int]]:
         try:
             zf = ZipFile(file_like)
         except BadZipfile as e:
@@ -104,13 +91,8 @@ class PalletHandler(Generic[T]):
             for pfile in file_list:
                 path_in_zf = Path(pfile.filename)
                 if pfile.filename.endswith("pallet.json"):
-                    fs_path = self.path.with_stem(
-                        self.path.stem + f"_{len(found_pallets)}"
-                    )
-                    async with aiofiles.open(fs_path, "wb+") as f:
-                        await f.write(zf.read(pfile))
-                        platform = await self._get_platform(zf)
-                        found_pallets.append((path_in_zf, fs_path, platform))
+                    await self.read_pallet_json(zf, found_pallets, pfile, path_in_zf)
+
             if len(found_pallets) < 0:
                 raise PalletLoadError(
                     "pallet.json not found in zip.",
@@ -123,7 +105,14 @@ class PalletHandler(Generic[T]):
                 self.modio_file_id,
             ) from e
 
-    async def _get_platform(self, zf: ZipFile) -> ModPlatform:
+    async def read_pallet_json(self, zf, found_pallets, pfile, path_in_zf):
+        fs_path = self.path.with_stem(self.path.stem + f"_{len(found_pallets)}")
+        async with aiofiles.open(fs_path, "wb+") as f:
+            await f.write(zf.read(pfile))
+            platform = await self._get_platform(zf)
+            found_pallets.append((path_in_zf, fs_path, platform))
+
+    async def _get_platform(self, zf: ZipFile) -> int:
         try:
             file_list = zf.infolist()
             for pfile in file_list:
@@ -136,12 +125,12 @@ class PalletHandler(Generic[T]):
                         bytes("SLZ.Marrow.MarrowSDK.RuntimeModsPath}\\\\", "utf-8")
                         in jfile
                     ):
-                        return ModPlatform.PCVR
+                        return 0
                     elif (
                         bytes("SLZ.Marrow.MarrowSDK.RuntimeModsPath}/", "utf-8")
                         in jfile
                     ):
-                        return ModPlatform.QUEST
+                        return 1
         except NotImplementedError as e:
             raise PalletLoadError(
                 "Unknown Errror",

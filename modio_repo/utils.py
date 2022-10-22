@@ -3,6 +3,7 @@ from pathlib import Path
 
 from modio.client import Mod as ApiMod
 
+
 class PalletLoadError(Exception):
     def __init__(self, message, pallet_id: int):
         # Call the base class constructor with the parameters it needs

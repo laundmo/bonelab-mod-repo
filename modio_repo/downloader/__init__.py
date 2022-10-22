@@ -3,7 +3,7 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import AsyncGenerator, Generator, List, Type
+from typing import AsyncGenerator, List, Type
 
 import aiohttp
 import modio
@@ -11,19 +11,11 @@ import pytz
 from dotenv import load_dotenv
 from modio.client import Game
 from modio.client import Mod as ApiMod
+from prisma.models import File, Mod, Pallet
+
 from modio_repo.downloader.mod_files import ModFiles
 from modio_repo.downloader.pallets import PalletHandler
-from modio_repo.models import (
-    Mod,
-    PalletBase,
-    PalletErrorBase,
-    PcPallet,
-    PcPalletError,
-    QuestPallet,
-    QuestPalletError,
-)
 from modio_repo.utils import PalletLoadError, get_api_mod_updated, log
-from tortoise import Tortoise, run_async
 
 load_dotenv()
 
@@ -94,7 +86,7 @@ class Run:
                 log("Skipped ", api_mod.name)
 
     async def insert_update_mod(self, api_mod: ApiMod):
-        mod = await Mod.filter(id=api_mod.id).first()
+        mod = await Mod.prisma().find_first(where={"id": api_mod.id})
         if mod is None:
             await self.insert_mod(api_mod)
         else:
@@ -105,12 +97,14 @@ class Run:
                 changed = True
 
             # check if new mod file
-            last_file_change = await mod.get_last_file_change()
+            last_file = await File.prisma().find_first(
+                where={"mod_id": mod.id}, order={"added": "desc"}
+            )
             if (
                 api_mod.file is None
-                or last_file_change is None
+                or last_file is None
                 or datetime.fromtimestamp(api_mod.file.date, tz=pytz.UTC)
-                > last_file_change
+                > last_file.added
             ):
                 changed = True
 
@@ -119,57 +113,80 @@ class Run:
                 await self.insert_mod(api_mod)
 
     async def insert_mod(self, api_mod: ApiMod):
-        mod, created = await Mod.update_or_create(
-            id=api_mod.id,
-            defaults={
-                "name": api_mod.name,
-                "description": api_mod.summary,
-                "mod_updated": get_api_mod_updated(api_mod),
-                "last_checked": datetime.now(),
-                "thumbnailUrl": mod_logo_url(api_mod),
-                "malformed_pallet": False,
-                "nsfw": api_mod.maturity.value == api_mod.maturity.explicit.value,
+        id: int = api_mod.id
+        name: str = api_mod.name
+        summary: str = api_mod.summary
+        updated = get_api_mod_updated(api_mod)
+        logo = mod_logo_url(api_mod)
+        explicit = api_mod.maturity.value == api_mod.maturity.explicit.value
+
+        mod = await Mod.prisma().upsert(
+            where={"id": api_mod.id},
+            data={
+                "create": {
+                    "id": id,
+                    "name": name,
+                    "description": summary,
+                    "mod_updated": updated,
+                    "last_checked": datetime.now(),
+                    "thumbnailUrl": logo,
+                    "malformed_pallet": False,
+                    "nsfw": explicit,
+                },
+                "update": {
+                    "name": name,
+                    "description": summary,
+                    "mod_updated": updated,
+                    "last_checked": datetime.now(),
+                    "thumbnailUrl": logo,
+                    "malformed_pallet": False,
+                    "nsfw": explicit,
+                    "files": {"set": []},
+                },
             },
         )
 
-        await mod.save()
-
-        if not created:
-            # re-pull files if changed
-            await mod.clear_files()
-
         await self.insert_mod_files(api_mod, mod)
 
-    async def insert_mod_files(self, api_mod, mod):
+    async def insert_mod_files(self, api_mod: ApiMod, mod: Mod):
         mf = ModFiles(mod, api_mod, self.session)
 
         await mf.insert_mod_files()
 
-        pc_file = await mod.get_pc_file()
+        # for each platform?
+
+        pc_file = await File.prisma().find_first(
+            where={"mod_id": mod.id, "platform_id": 0}
+        )
         if pc_file is not None:
-            await self.pallet_from_file(mod, pc_file, PcPalletError)
+            await self.pallet_from_file(mod, pc_file)
 
-        quest_file = await mod.get_quest_file()
+        quest_file = await File.prisma().find_first(
+            where={"mod_id": mod.id, "platform_id": 1}
+        )
         if quest_file is not None:
-            await self.pallet_from_file(mod, quest_file, QuestPalletError)
+            await self.pallet_from_file(mod, quest_file)
 
-    async def pallet_from_file(self, mod: Mod, file, error_cls: Type[PalletErrorBase]):
+    async def pallet_from_file(
+        self,
+        mod: Mod,
+        file: File,
+    ):
         try:
             ph = PalletHandler(mod, file, self.session)
             await ph.run()
         except PalletLoadError as e:
             if e.modio_file_id == -999:
                 log("pallet error", e)
-            await Mod.filter(id=mod.id).update(malformed_pallet=True)
-            error = error_cls(file=file, error=str(e))
-            await error.save()
+            mod.malformed_pallet = True
+            await mod.prisma().update(
+                where={"id": mod.id}, data={"malformed_pallet": True}
+            )
             raise ModSkip
 
 
 async def delete_old_pallets():
-    pallets: List[PcPallet | QuestPallet] = []
-    pallets.extend(await QuestPallet.all())
-    pallets.extend(await PcPallet.all())
+    pallets = await Pallet.prisma().find_many()
 
     paths = [Path(pallet.fs_path).resolve() for pallet in pallets]
     for pallet_file in PalletHandler.PATH.glob("*.json"):

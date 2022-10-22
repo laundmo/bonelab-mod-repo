@@ -3,8 +3,8 @@ from datetime import datetime
 import aiohttp
 import modio
 from modio.client import Mod as ApiMod
+from prisma.models import File, Mod, Pallet, PalletError, Platform
 
-from modio_repo.models import Mod, PcModFile, QuestModFile
 from modio_repo.utils import log
 
 
@@ -28,34 +28,26 @@ class ModFiles:
 
         need_oculus = True
         need_pc = True
+        platforms = {p.name: p for p in await Platform.prisma().find_many()}
         for file_data in dl_urls:
             if file_data.platforms is not None:
                 platform = file_data.platforms[0]["platform"]
+                r = await self.session.head(file_data.url)
 
                 if (platform == "android" or platform == "oculus") and need_oculus:
-                    r = await self.session.head(file_data.url)
-                    mf = QuestModFile(
-                        id=file_data.id,
-                        added=datetime.fromtimestamp(file_data.date),
-                        url=r.headers["Location"],
-                        mod=self.mod,
-                    )
-                    await mf.save()
+                    platform = platforms["Quest"]
                     need_oculus = False
 
-                if platform == "windows" and need_pc:
-                    r = await self.session.head(file_data.url)
-                    mf = PcModFile(
-                        id=file_data.id,
-                        added=datetime.fromtimestamp(file_data.date),
-                        url=r.headers["Location"],
-                        mod=self.mod,
-                    )
-                    await mf.save()
+                elif platform == "windows" and need_pc:
+                    platform = platforms["Pc"]
                     need_pc = False
 
-    async def get_quest(self) -> QuestModFile | None:
-        return await self.mod.quest_file.all().first()
-
-    async def get_pc(self) -> PcModFile | None:
-        return await self.mod.pc_file.all().first()
+                await File.prisma().create(
+                    data={
+                        "id": file_data.id,
+                        "added": datetime.fromtimestamp(file_data.date),
+                        "mod_id": self.mod.id,
+                        "url": r.headers["Location"],
+                        "platform_id": platform.id,
+                    }
+                )
