@@ -14,39 +14,49 @@
 </figcaption>
 
 
-<div class="quest alert alert-primary" role="alert">You will need: Quest connected to PC or alternatively a Sideloaded
-    Quest file explorer (CX, Amaze)</div>
+{% set quest_instructions %}
+	{% set if_pc %}
+		<span style="color:darkcyan">If you're using a PC for this:</span>
+	{% endset %}
 
-
-{% set quest_path %}
-<code>Android &gt; data &gt; com.StressLevelZero.BONELAB &gt; files</code>
-{% endset %}
-
-{% set pc_path %}
-<code>C:\Users\USERNAMEHERE\AppData\LocalLow\Stress Level
-Zero\BONELAB\</code>
-{% endset %}
-
-{% set if_pc %}
-<span style="color:darkcyan">If you're using a PC for this:</span>
-{% endset %}
-<ol>
-    <li>Using a file explorer, navigate to </br><code>{{pc_quest_toggle(pc_path, quest_path)}}</code></br></li>
-
-    <li class="quest">{{if_pc}} Copy/Move the file to your
-        Desktop</li>
+<div class="quest alert alert-primary" role="alert">You will need: Quest connected to PC or alternatively a sideloaded Quest file explorer (CX, Amaze)</div>
+<ol>    
+	<li>Using a file explorer, navigate to <code>Android > data > com.StressLevelZero.BONELAB > files</code></li>
+    <li><class="quest">{{if_pc}} Copy/Move the file to your Desktop.</li>
     <li>Open the <code>repositories.txt</code> file.</li>
-    <li>Paste the URL at the very bottom of the file.
-        <code></br>https://blrepo.laund.moe/repository.json</code></br>
-        if you want NSFW mods, paste this below it. </br>
-        <code>https://blrepo.laund.moe/nsfw_repository.json</code>
+    <li>Paste this URL at the very bottom of the file:<br>
+		<code>https://blrepo.laund.moe/repository.json</code><br>
+        If you want NSFW mods, paste this below it:<br>
+		<code>https://blrepo.laund.moe/nsfw_repository.json</code>
     </li>
-    <li>Save the file</li>
-    <li class="quest">{{if_pc}} Copy/Move the file back to {{quest_path}}. Make sure you
+    <li>Save the file.</li>
+    <li class="quest">{{if_pc}} Copy/Move the file back to <code>Android > data > com.StressLevelZero.BONELAB > files</code></br>. Make sure you
         Replace/Override it.</li>
     <li>Go to your mod station in Bonelab, open Settings and then Repos.</li>
     <li>Make sure the mod.io repos show up.</li>
 </ol>
+{% endset %}
+
+{% set pc_instructions %}
+<ol>
+    <li>Press Win+R, then in the Run prompt that opens, enter:<br>
+		<code>notepad %USERPROFILE%\AppData\LocalLow\Stress Level Zero\BONELAB\repositories.txt</code><br>
+	then press Enter.</li>
+    <li>Paste this URL at the very bottom of the file:<br>
+		<code>https://blrepo.laund.moe/repository.json</code><br>
+        If you want NSFW mods, paste this below it:<br>
+		<code>https://blrepo.laund.moe/nsfw_repository.json</code>
+    </li>
+    <li>Save the file.</li>
+	<li>Go to your mod station in Bonelab, open Settings and then Repos.</li>
+    <li>Make sure the mod.io repos show up.</li>
+</ol>
+{% endset %}
+
+
+{{pc_quest_toggle(pc_instructions, quest_instructions)}}
+
+
 <h3>This is what your <code>repositories.txt</code> should look like</h3>
 <p><img src="https://blrepo.laund.moe/bonelab-repo.png" alt=""></p>
 <iframe class="quest" width="560" height="315" src="https://www.youtube.com/embed/7mo452r47_s"
