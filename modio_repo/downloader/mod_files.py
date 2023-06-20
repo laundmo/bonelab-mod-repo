@@ -3,6 +3,7 @@ from datetime import datetime
 import aiohttp
 import modio
 from modio.client import Mod as ApiMod
+from modio.enums import TargetPlatform
 
 from modio_repo.models import Mod, PcModFile, QuestModFile
 from modio_repo.utils import log
@@ -30,9 +31,9 @@ class ModFiles:
         need_pc = True
         for file_data in dl_urls:
             if file_data.platforms is not None:
-                platform = file_data.platforms[0]["platform"]
+                platforms = file_data.platforms
 
-                if (platform == "android" or platform == "oculus") and need_oculus:
+                if (TargetPlatform.android in platforms or TargetPlatform.oculus in platforms) and need_oculus:
                     r = await self.session.head(file_data.url)
                     mf = QuestModFile(
                         id=file_data.id,
@@ -43,7 +44,7 @@ class ModFiles:
                     await mf.save()
                     need_oculus = False
 
-                if platform == "windows" and need_pc:
+                if TargetPlatform.windows in platforms and need_pc:
                     r = await self.session.head(file_data.url)
                     mf = PcModFile(
                         id=file_data.id,
