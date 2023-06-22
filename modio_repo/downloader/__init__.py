@@ -64,12 +64,8 @@ class Run:
 
         game = await client.async_get_game(3809)  # 3809 = bonelab
 
-        tasks = []
-
         async for mods in self.generate_mods(game, onepage):
-            tasks.append(self.insert_mods(mods))
-
-        await asyncio.gather(*tasks)
+            await self.insert_mods(mods)
         await client.close()
 
     async def generate_mods(
