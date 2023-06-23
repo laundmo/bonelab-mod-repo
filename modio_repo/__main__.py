@@ -121,4 +121,4 @@ if __name__ == "__main__":
         except Exception as e:
             log(traceback.format_exc())
             log(e)
-        time.sleep(60 * 5)
+        time.sleep(60 * 3)
