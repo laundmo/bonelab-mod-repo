@@ -13,6 +13,8 @@ class Mod(Model):
     malformed_pallet = fields.BooleanField()
     nsfw = fields.BooleanField()
     thumbnailUrl = fields.TextField()
+    rank = fields.IntField()
+    downloads = fields.IntField()
 
     quest_file: fields.ReverseRelation[QuestModFile]
     pc_file: fields.ReverseRelation[PcModFile]

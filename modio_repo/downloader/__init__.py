@@ -129,6 +129,8 @@ class Run:
                 "thumbnailUrl": mod_logo_url(api_mod),
                 "malformed_pallet": False,
                 "nsfw": api_mod.maturity.value == api_mod.maturity.explicit.value,
+                "rank": api_mod.stats.rank,
+                "downloads": api_mod.stats.downloads,
             },
         )
 
