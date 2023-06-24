@@ -20,10 +20,14 @@ class Mod(Model):
     pc_file: fields.ReverseRelation[PcModFile]
 
     async def get_quest_file(self):
-        return await self.quest_file.all().first()
+        cached = getattr(self, "__quest_file_cached", None)
+        self.__quest_file_cached = cached or await self.quest_file.all().first()
+        return self.__quest_file_cached
 
     async def get_pc_file(self):
-        return await self.pc_file.all().first()
+        cached = getattr(self, "__pc_file_cached", None)
+        self.__pc_file_cached = cached or await self.pc_file.all().first()
+        return self.__pc_file_cached
 
     async def get_last_file_change(self):
         pc_file = await self.get_pc_file()
