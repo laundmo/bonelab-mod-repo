@@ -45,7 +45,7 @@ class PalletHandler(Generic[T]):
         try:
             file_obj = await self.download()
         except asyncio.exceptions.TimeoutError:
-            raise PalletLoadError("Could not downlaod mod file", -999)
+            raise PalletLoadError("Could not download mod file", -999)
         pallet_list = await self.get_from_zip(file_obj)
 
         for zf_path, fs_path, mod_platform in pallet_list:
