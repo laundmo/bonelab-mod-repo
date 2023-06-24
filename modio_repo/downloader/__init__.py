@@ -30,6 +30,9 @@ load_dotenv()
 MODIO_API_KEY = os.getenv("MODIO_API_KEY")
 MODIO_API_SECRET = os.getenv("MODIO_API_SECRET")
 
+# paralell downloads
+par_download_sem = asyncio.Semaphore(8)
+
 # ingame repo downloading:  https://discord.com/channels/918643357998260246/918649756463538216/1026581323525148713
 # 1. Open data as zip
 # 2. Find all files named pallet.json in the zip
@@ -63,9 +66,12 @@ class Run:
         await client.start()
 
         game = await client.async_get_game(3809)  # 3809 = bonelab
+        
+        tasks = []
 
         async for mods in self.generate_mods(game, onepage):
-            await self.insert_mods(mods)
+            tasks.append(self.insert_mods(mods))
+        await asyncio.gather(*tasks)
         await client.close()
 
     async def generate_mods(
@@ -82,12 +88,14 @@ class Run:
             yield mods_result
 
     async def insert_mods(self, mods_result: List[ApiMod]):
-        log(f"working on {len(mods_result)}")
-        for api_mod in mods_result:
-            try:
-                await self.insert_update_mod(api_mod)
-            except ModSkip:
-                log("Skipped ", api_mod.name)
+        # use the semaphore to limit paralellism
+        async with par_download_sem:
+            log(f"working on {len(mods_result)}")
+            for api_mod in mods_result:
+                try:
+                    await self.insert_update_mod(api_mod)
+                except ModSkip:
+                    log("Skipped ", api_mod.name)
 
     async def insert_update_mod(self, api_mod: ApiMod):
         mod = await Mod.filter(id=api_mod.id).first()
@@ -114,8 +122,7 @@ class Run:
                 log(f"Mod has changed, updating and re-downloading {api_mod.name}")
                 await self.insert_mod(api_mod)
             else:
-                log(f"Mod update stats {api_mod.name}")
-                self.update_stats_mod(api_mod)
+                await self.update_stats_mod(api_mod)
 
     async def update_stats_mod(self, api_mod: ApiMod):
         mod, created = await Mod.update_or_create(
