@@ -1,7 +1,8 @@
 import asyncio
 import os
+from random import random
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import AsyncGenerator, Generator, List, Type
 
@@ -17,6 +18,7 @@ from modio_repo.models import (
     Mod,
     PalletBase,
     PalletErrorBase,
+    PcModFile,
     PcPallet,
     PcPalletError,
     QuestPallet,
@@ -104,10 +106,25 @@ class Run:
         else:
             changed = False
 
+
             # check if mod updated
             if mod.mod_updated < api_mod.updated.astimezone(pytz.UTC):
                 changed = True
-
+            
+            # check if pallet exists (random chance to not redownload all missing ones every time)
+            if random() > 0.95:
+                log(f"randomly chosen: {mod.name} for pallet check")
+                pc_file = await mod.get_pc_file()
+                if pc_file is not None:
+                    pc_pallet = await pc_file.pallet.all().first()
+                    if pc_pallet is None:
+                        changed = True
+                quest_file = await mod.get_quest_file()
+                if quest_file is not None:
+                    pc_pallet = await quest_file.pallet.all().first()
+                    if pc_pallet is None:
+                        changed = True
+             
             # check if new mod file
             last_file_change = await mod.get_last_file_change()
             if (
