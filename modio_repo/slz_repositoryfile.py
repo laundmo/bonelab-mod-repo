@@ -94,7 +94,7 @@ class RepositoryFile:
 
     # in-game ui sorting hack based on ranks (trending)
     def titlesorthack(self, mod: Mod):
-        rank = ""
+        rank = "<size=0%>999999999</size>"
         if mod.rank is not None:
             rank = f'<size=0%>{mod.rank:09d}</size>'
         return f'{rank}{mod.name}\n  <mspace=-0.2>▬ꜜ</mspace>    {mod.downloads}'
