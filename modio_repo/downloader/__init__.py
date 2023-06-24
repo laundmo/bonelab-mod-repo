@@ -113,7 +113,6 @@ class Run:
             
             # check if pallet exists (random chance to not redownload all missing ones every time)
             if random() > 0.95:
-                log(f"randomly chosen: {mod.name} for pallet check")
                 pc_file = await mod.get_pc_file()
                 if pc_file is not None:
                     pc_pallet = await pc_file.pallet.all().first()
