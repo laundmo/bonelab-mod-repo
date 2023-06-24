@@ -66,7 +66,7 @@ class RepositoryFile:
                 SLZObject(
                     self.t_list.ref,
                     barcode=pallet.barcode,
-                    title=mod.name,
+                    title=self.titlesorthack(mod),
                     description=mod.description,
                     author=pallet.author,
                     version=pallet.version,
@@ -93,3 +93,7 @@ class RepositoryFile:
                 "ref": target.ref,
                 "type": target.type,
             }
+
+    # in-game ui sorting hack based on ranks (trending)
+    def titlesorthack(self, mod: Mod):
+        return f'<size=0%>{mod.rank:09d}</size>{mod.name}\n  <mspace=-0.2>▬ꜜ</mspace>    {mod.downloads}'

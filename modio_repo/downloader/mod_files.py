@@ -4,10 +4,13 @@ import aiohttp
 import modio
 from modio.client import Mod as ApiMod
 from modio.enums import TargetPlatform
+from modio.entities import ModFilePlatform
 
 from modio_repo.models import Mod, PcModFile, QuestModFile
 from modio_repo.utils import log
 
+def contains_targetplatforms(modplatforms: list[ModFilePlatform], targetplatforms: list[TargetPlatform]):
+    return len([ modplatform for modplatform in modplatforms for targetplatform in targetplatforms if modplatform.platform == targetplatform ]) > 0
 
 class ModFiles:
     def __init__(
@@ -32,8 +35,8 @@ class ModFiles:
         for file_data in dl_urls:
             if file_data.platforms is not None:
                 platforms = file_data.platforms
-
-                if (TargetPlatform.android in platforms or TargetPlatform.oculus in platforms) and need_oculus:
+                if need_oculus and contains_targetplatforms(platforms, [TargetPlatform.android, TargetPlatform.oculus]):
+                    log("\tQuest: " + file_data.url)
                     r = await self.session.head(file_data.url)
                     mf = QuestModFile(
                         id=file_data.id,
@@ -44,7 +47,8 @@ class ModFiles:
                     await mf.save()
                     need_oculus = False
 
-                if TargetPlatform.windows in platforms and need_pc:
+                if need_pc and contains_targetplatforms(platforms, [TargetPlatform.windows]):
+                    log("\tPC: " + file_data.url)
                     r = await self.session.head(file_data.url)
                     mf = PcModFile(
                         id=file_data.id,

@@ -113,6 +113,27 @@ class Run:
             if changed:
                 log(f"Mod has changed, updating and re-downloading {api_mod.name}")
                 await self.insert_mod(api_mod)
+            else:
+                log(f"Mod update stats {api_mod.name}")
+                self.update_stats_mod(api_mod)
+
+    async def update_stats_mod(self, api_mod: ApiMod):
+        mod, created = await Mod.update_or_create(
+            id=api_mod.id,
+            defaults={
+                "name": api_mod.name,
+                "description": api_mod.summary,
+                # "mod_updated": get_api_mod_updated(api_mod),
+                # "last_checked": datetime.now(),
+                "thumbnailUrl": mod_logo_url(api_mod),
+                "malformed_pallet": False,
+                "nsfw": api_mod.maturity.value == api_mod.maturity.explicit.value,
+                "rank": api_mod.stats.rank,
+                "downloads": api_mod.stats.downloads,
+            },
+        )
+
+        await mod.save()
 
     async def insert_mod(self, api_mod: ApiMod):
         mod, created = await Mod.update_or_create(
@@ -125,6 +146,8 @@ class Run:
                 "thumbnailUrl": mod_logo_url(api_mod),
                 "malformed_pallet": False,
                 "nsfw": api_mod.maturity.value == api_mod.maturity.explicit.value,
+                "rank": api_mod.stats.rank,
+                "downloads": api_mod.stats.downloads,
             },
         )
 
