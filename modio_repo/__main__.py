@@ -23,9 +23,9 @@ async def check_duplicate_pallet_for(
         (common,) = barcodes.most_common(1)
         barcode, count = common
         if count > 1:
-            err = error(
+            (err, _) = await error.update_or_create(
                 file=file_,
-                error=f"{file_.url} contains duplicate pallet barcodes: {barcode}",
+                defaults={"error": f"{file_.url} contains duplicate pallet barcodes: {barcode}"},
             )
             await err.save()
 
