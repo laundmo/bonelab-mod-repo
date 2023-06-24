@@ -1,5 +1,6 @@
 from modio_repo.models import Mod, PcPallet, QuestPallet
 from modio_repo.slz_json import RefList, SLZContainer, SLZObject, SLZType, dump
+from modio_repo.utils import log
 
 
 class RepositoryFile:
@@ -77,6 +78,8 @@ class RepositoryFile:
                     targets=targets,
                 )
             )
+        else:
+            log(f"no pallet found in {mod.id}: {mod.name}")
 
     def maybe_add_platform(self, targets, platform, file_):
         if file_ is not None:
