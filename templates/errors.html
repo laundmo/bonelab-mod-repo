@@ -1,0 +1,42 @@
+{% extends "_base.jinja2" %}
+
+{% block body %}
+<h1 class="mt-5 pt-3 display-4">Mod Errors:</h1>
+<table id="tbl" class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Mod Name</th>
+            <th>Last Update</th>
+            <th>Errors</th>
+        </tr>
+    </thead>
+    <tbody id="tbl-cont">
+
+    </tbody>
+</table>
+{% endblock %}
+{% block js %}
+<script>
+    async function load() {
+        await fetch("/errors.json")
+            .then((response) => {
+                return response.json(); // data into json
+            })
+            .then((data) => {
+
+                var table = document.getElementById('tbl-cont');
+                data.forEach(function (object) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + object.modname + '</td>' +
+                        '<td>' + object.last_update.replace("+00:00", "") + '</td>' +
+                        '<td>' + object.messages.join('\n') + '</td>';
+                    table.appendChild(tr);
+                });
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
+    load();
+</script>
+{% endblock %}

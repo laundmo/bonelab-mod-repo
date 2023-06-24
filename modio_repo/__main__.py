@@ -80,14 +80,38 @@ async def run():
         await nsfw_repofile.add_mod(mod)
     nsfw_repofile.save()
 
-    faulty_mods = await Mod.filter(malformed_pallet=True).count()
+    faulty_pc = await PcPalletError.all()
+    faulty_quest = await QuestPalletError.all()
+    faulty_mods = {}
+    for pc_err in faulty_pc:
+        file = await pc_err.file
+        mod = await file.mod
+        faulty_mods[mod.id] = {
+            "modname": mod.name,
+            "messages": [pc_err.error],
+            "last_update": mod.mod_updated.isoformat()
+        }
+    for quest_err in faulty_quest:
+        file = await quest_err.file
+        mod = await file.mod
+        if mod.id not in faulty_mods:
+            faulty_mods[mod.id] = {
+                "modname": mod.name,
+                "messages": [quest_err.error],
+                "last_update": mod.mod_updated.isoformat()
+            }
+        else:
+            faulty_mods[mod.id]["messages"].append(quest_err.error)
     with open("./static/site_meta.json", "w+") as f:
         json.dump({
             "updated": datetime.utcnow().isoformat(),
             "nsfw_count": len(nsfw_mods),
             "sfw_count": len(sfw_mods),
-            "faulty_count": faulty_mods
+            "faulty_count": len(faulty_mods)
         }, f)
+    with open("./static/errors.json", "w+") as f:
+        json.dump(list(faulty_mods.values()), f)
+
 
 
 async def set_malformed(mod):
