@@ -12,6 +12,7 @@ import pytz
 from dotenv import load_dotenv
 from modio.client import Game
 from modio.client import Mod as ApiMod
+from modio.enums import Visibility
 from modio_repo.downloader.mod_files import ModFiles
 from modio_repo.downloader.pallets import PalletHandler
 from modio_repo.models import (
@@ -88,12 +89,22 @@ class Run:
             filters.offset(pagination.next())
             mods_result, pagination = await game.async_get_mods(filters=filters)
             yield mods_result
+            
+    async def delete_mod(self, api_mod: ApiMod):
+        mod = await Mod.filter(id=api_mod.id).first()
+        if mod is not None:
+            await mod.delete()
 
     async def insert_mods(self, mods_result: List[ApiMod]):
         # use the semaphore to limit paralellism
         async with par_download_sem:
             log(f"working on {len(mods_result)}")
             for api_mod in mods_result:
+                if api_mod.visible.value == Visibility.hidden.value:
+                    await self.delete_mod(api_mod)
+                    print(f"Deleted invisible mod {api_mod.name}")
+                    continue
+                    
                 try:
                     await self.insert_update_mod(api_mod)
                 except ModSkip:
