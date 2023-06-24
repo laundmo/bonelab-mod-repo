@@ -78,8 +78,6 @@ class RepositoryFile:
                     targets=targets,
                 )
             )
-        else:
-            log(f"no pallet found in {mod.id}: {mod.name}")
 
     def maybe_add_platform(self, targets, platform, file_):
         if file_ is not None:
