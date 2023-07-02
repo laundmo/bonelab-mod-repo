@@ -135,14 +135,5 @@ def main():
 
 
 if __name__ == "__main__":
-    import time
-    import traceback
+    main()
 
-    while True:
-        try:
-            main()
-            log("Done!")
-        except Exception as e:
-            log(traceback.format_exc())
-            log(e)
-        time.sleep(60 * 3)

@@ -4,6 +4,7 @@ from random import random
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
+import traceback
 from typing import AsyncGenerator, Generator, List, Type
 
 import aiohttp
@@ -109,6 +110,10 @@ class Run:
                     await self.insert_update_mod(api_mod)
                 except ModSkip:
                     log("Skipped ", api_mod.name)
+                except Exception as e:
+                    traceback.print_exc()
+                    log(e, " in ", api_mod.name)
+                    
 
     async def insert_update_mod(self, api_mod: ApiMod):
         mod = await Mod.filter(id=api_mod.id).first()
